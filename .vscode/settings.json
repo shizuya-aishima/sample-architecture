@@ -1,0 +1,6 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "editor.tabSize": 2,
+    "javascript.format.insertSpaceAfterConstructor": false,
+    "files.trimTrailingWhitespace": true
+}

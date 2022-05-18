@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+option java_package = "com.example.grpc.item";
+
+// 品目サービス
+service Item {
+  // 品目登録を行う
+  rpc create (CreateRequest) returns (stream CreateReply) {}
+  // 品目参照を行う
+  rpc search (SearchRequest) returns (SearchReply) {}
+  // 品目更新を行う
+  rpc update (UpdateRequest) returns (UpdateReply) {}
+}
+
+// データ状態
+enum Status {
+  PENDING = 0; // 保留（トランザクション登録前）
+  FINISH = 1; // 登録完了
+  FAIL = 2; // 失敗
+}
+
+// 登録用リクエスト
+message CreateRequest {
+  string name = 1; // 品目名
+  repeated int32 item_id_list = 2; // 素材の item id List
+  // bytes data = 3; // 画像データ
+}
+
+// 登録レスポンス
+message CreateReply {
+  Status status = 1; // データ状態
+}
+
+// 検索リクエスト
+message SearchRequest {
+  int32 id = 1; // 品目ID
+  string name = 2; // 品目名
+}
+
+// 品目データ
+message Bean {
+  int32 id = 1; // 品目ID
+  string name = 2; // 品目名
+}
+
+// 検索レスポンス
+message SearchReply {
+  int32 id = 1; // 品目ID
+  string name = 2; // 品目名
+  repeated Bean item_id_list = 3; // 素材の item id List
+}
+
+// 更新リクエスト
+message UpdateRequest {
+  int32 id = 1; // 品目ID
+  string name = 2; // 品目名
+  repeated Bean item_id_list = 3; // 素材の item id List
+}
+
+// 更新レスポンス
+message UpdateReply {
+  Status status = 1; // データ状態
+}
