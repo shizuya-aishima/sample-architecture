@@ -14,13 +14,6 @@ plugins {
     id 'com.google.protobuf' version '0.8.18'
 }
 
-dependencyManagement {
-  imports {
-    mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2021.0.2'
-  }
-}
-// apply plugin: 'com.google.protobuf'
-
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
@@ -44,8 +37,10 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // https://mvnrepository.com/artifact/io.github.lognet/grpc-spring-boot-starter
     implementation 'io.github.lognet:grpc-spring-boot-starter:4.6.0'
-    // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-data-firestore
-    implementation 'org.springframework.cloud:spring-cloud-gcp-starter-data-firestore:1.2.1.RELEASE'
+
+    // firestore 関係
+    implementation 'com.google.cloud:spring-cloud-gcp-starter-firestore:3.2.1'
+    implementation 'com.google.cloud:spring-cloud-gcp-starter:3.2.1'
 }
 
 tasks.named('test') {
