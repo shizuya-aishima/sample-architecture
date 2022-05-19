@@ -1,6 +1,25 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
+    "typescript.tsdk": "front/node_modules/typescript/lib",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true // <-- eslintでリント
+    },
+    "files.trimTrailingWhitespace": true,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "files.insertFinalNewline": true,
+    // "java.checkstyle.configuration": "${workspaceFolder}/back/config/checkstyle/google_checks.xml",
+    "java.checkstyle.version": "8.37",
+    "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+    "java.format.settings.profile": "GoogleStyle",
+    "java.saveActions.organizeImports": true,
     "editor.tabSize": 2,
-    "javascript.format.insertSpaceAfterConstructor": false,
-    "files.trimTrailingWhitespace": true
+    "java.checkstyle.autocheck": true,
+    "editor.insertSpaces": true,
+    "[java]": {
+        "editor.detectIndentation": true,
+    },
+    "java.checkstyle.properties": {
+        "configDir": "${workspaceFolder}/back/config/checkstyle"
+    }
 }
