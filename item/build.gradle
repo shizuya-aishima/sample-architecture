@@ -34,7 +34,13 @@ dependencies {
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
-	annotationProcessor 'org.projectlombok:lombok'
+
+	compileOnly 'org.projectlombok:lombok:1.18.24'
+	annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+	testCompileOnly 'org.projectlombok:lombok:1.18.24'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // https://mvnrepository.com/artifact/io.github.lognet/grpc-spring-boot-starter
     implementation 'io.github.lognet:grpc-spring-boot-starter:4.6.0'
@@ -45,6 +51,11 @@ dependencies {
     // firestore 関係
     implementation 'com.google.cloud:spring-cloud-gcp-starter-firestore:3.2.1'
     implementation 'com.google.cloud:spring-cloud-gcp-starter:3.2.1'
+
+    // static mock
+    // https://mvnrepository.com/artifact/org.mockito/mockito-inline
+    testImplementation 'org.mockito:mockito-inline:4.5.1'
+
 }
 
 tasks.named('test') {
@@ -106,3 +117,21 @@ tasks.jacocoTestReport {
     dependsOn(tasks.test)
 }
 // jacoco 設定
+
+// UT setting
+task startMockFirestore {
+  doFirst {
+    ext.process = new ProcessBuilder()
+      .directory(projectDir)
+      .inheritIO()
+      .command("sh/start-firestore-emulator.sh")
+      .start()
+      .waitFor()
+    }
+}
+tasks.test.dependsOn(startMockFirestore)
+
+task stopMockFirestore(type: Exec) {
+  executable "sh/stop-firestore-emulator.sh"
+}
+test.finalizedBy(stopMockFirestore)
