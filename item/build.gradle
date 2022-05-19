@@ -37,6 +37,9 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // https://mvnrepository.com/artifact/io.github.lognet/grpc-spring-boot-starter
     implementation 'io.github.lognet:grpc-spring-boot-starter:4.6.0'
+    // https://mvnrepository.com/artifact/io.grpc/grpc-testing
+    testImplementation 'io.grpc:grpc-testing:1.46.0'
+
 
     // firestore 関係
     implementation 'com.google.cloud:spring-cloud-gcp-starter-firestore:3.2.1'
