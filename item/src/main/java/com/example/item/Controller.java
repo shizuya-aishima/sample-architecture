@@ -23,7 +23,7 @@ public class Controller extends ItemImplBase {
     // TODO: 処理
     var reply = CreateReply.newBuilder().setStatus(Status.PENDING).build();
     responseObserver.onNext(reply);
-    var reply2 = CreateReply.newBuilder().setStatus(Status.PENDING).build();
+    var reply2 = CreateReply.newBuilder().setStatus(Status.FINISH).build();
     responseObserver.onNext(reply2);
     responseObserver.onCompleted();
   }

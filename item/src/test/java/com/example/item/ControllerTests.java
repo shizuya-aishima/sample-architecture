@@ -2,7 +2,9 @@ package com.example.item;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import com.example.grpc.item.ItemOuterClass.CreateReply;
 import com.example.grpc.item.ItemOuterClass.CreateRequest;
@@ -32,9 +34,10 @@ public class ControllerTests {
     }
     assertNull(responseObserver.getError());
     var results = responseObserver.getValues();
-    assertEquals(1, results.size());
-    var response = results.get(0);
-    assertEquals(CreateReply.newBuilder().setStatus(Status.PENDING).build(), response);
+    List<CreateReply> expected =
+        Arrays.asList(CreateReply.newBuilder().setStatus(Status.PENDING).build(),
+            CreateReply.newBuilder().setStatus(Status.FINISH).build());
+    assertIterableEquals(expected, results);
   }
 
 }
