@@ -20,10 +20,11 @@ public class Controller extends ItemImplBase {
 
   @Override
   public void create(CreateRequest request, StreamObserver<CreateReply> responseObserver) {
-    // TODO Auto-generated method stub
-    // super.create(request, responseObserver);
+    // TODO: 処理
     var reply = CreateReply.newBuilder().setStatus(Status.PENDING).build();
     responseObserver.onNext(reply);
+    var reply2 = CreateReply.newBuilder().setStatus(Status.PENDING).build();
+    responseObserver.onNext(reply2);
     responseObserver.onCompleted();
   }
 
