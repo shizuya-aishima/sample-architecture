@@ -1,6 +1,5 @@
 package com.example.item;
 
-import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import com.example.grpc.item.ItemGrpc.ItemImplBase;
@@ -30,7 +29,7 @@ public class Controller extends ItemImplBase {
     try {
       var uuid = UUID.randomUUID().toString();
       // TODO: 処理
-      var data = new Items(uuid, request.getName(), Arrays.asList("testid"));
+      var data = new Items(uuid, request.getName(), request.getItemIdsList());
 
       // .get() blocks on response
       WriteResult writeResult = firestore.document("items/" + uuid).set(data).get();

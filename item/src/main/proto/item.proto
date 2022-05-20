@@ -22,7 +22,7 @@ enum Status {
 // 登録用リクエスト
 message CreateRequest {
   string name = 1; // 品目名
-  repeated int32 item_id_list = 2; // 素材の item id List
+  repeated string item_ids = 2; // 素材の item id List
   // bytes data = 3; // 画像データ
 }
 

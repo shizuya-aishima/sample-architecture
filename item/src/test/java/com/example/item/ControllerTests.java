@@ -55,7 +55,8 @@ public class ControllerTests {
   @Test
   void outputTest() throws Exception {
     var itemName = "itemName";
-    CreateRequest request = CreateRequest.newBuilder().setName(itemName).build();
+    var ids = Arrays.asList("testid", "testid2");
+    CreateRequest request = CreateRequest.newBuilder().setName(itemName).addAllItemIds(ids).build();
     StreamRecorder<CreateReply> responseObserver = StreamRecorder.create();
     controller.create(request, responseObserver);
     if (!responseObserver.awaitCompletion(5, TimeUnit.SECONDS)) {
@@ -73,7 +74,7 @@ public class ControllerTests {
         firestore.document("items/" + strUuid).get();
 
     var item = documentSnapshotApiFuture.get().toObject(Items.class);;
-    var expectedData = new Items(strUuid, itemName, Arrays.asList("testid"));
+    var expectedData = new Items(strUuid, itemName, Arrays.asList("testid", "testid2"));
 
     assertEquals(expectedData, item);
   }
