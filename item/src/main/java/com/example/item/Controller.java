@@ -44,7 +44,8 @@ public class Controller extends ItemImplBase {
       }
 
       // TODO: 処理
-      var data = new Items(uuid, request.getName(), request.getItemIdsList());
+      var data = new Items(uuid, request.getName(), request.getItemIdsList().stream()
+          .map((e) -> Items.builder().id(e.getId()).build()).toList());
 
       // .get() blocks on response
       WriteResult writeResult = firestore.document("items/" + uuid).set(data).get();
@@ -85,7 +86,8 @@ public class Controller extends ItemImplBase {
 
       data.stream()
           .map((e) -> SearchReply.newBuilder().setId(e.getId()).setName(e.getName())
-              .addAllItemIds(e.getItemIds().stream().map((id) -> searchId(id)).toList()).build())
+              .addAllItemIds(e.getItemIds().stream().map((id) -> searchId(id.getId())).toList())
+              .build())
           .sorted((a, b) -> a.getName().compareTo(b.getName()))
           .forEach((e) -> responseObserver.onNext(e));
       // var data2 = SearchReply.newBuilder().setId()
@@ -123,7 +125,8 @@ public class Controller extends ItemImplBase {
   @Override
   public void update(UpdateRequest request, StreamObserver<UpdateReply> responseObserver) {
     var uuid = request.getId();
-    var data = new Items(uuid, request.getName(), request.getItemIdsList());
+    var data = new Items(uuid, request.getName(), request.getItemIdsList().stream()
+        .map((e) -> Items.builder().id(e.getId()).build()).toList());
 
     // .get() blocks on response
     try {
@@ -148,7 +151,9 @@ public class Controller extends ItemImplBase {
     try {
       var item = findDoc(request.getId());
       responseObserver.onNext(ItemFindReply.newBuilder().setId(item.getId()).setName(item.getName())
-          .addAllItemIds(item.getItemIds()).build());
+          .addAllItemIds(item.getItemIds().stream()
+              .map((e) -> Bean.newBuilder().setId(e.getId()).build()).toList())
+          .build());
     } catch (InterruptedException | ExecutionException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();

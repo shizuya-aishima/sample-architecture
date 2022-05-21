@@ -123,8 +123,10 @@ public class ControllerTests {
     var itemName = "itemName";
     var ids = Arrays.asList("testid", "testid2");
     var price = 10000;
-    CreateRequest request =
-        CreateRequest.newBuilder().setName(itemName).addAllItemIds(ids).setPrice(price).build();
+    CreateRequest request = CreateRequest
+        .newBuilder().setName(itemName).addAllItemIds(Arrays.asList(Bean.newBuilder()
+            .setId(uuidSearch1.toString()).setName("name2").setQuantity(3).build()))
+        .setPrice(price).build();
     StreamRecorder<CreateReply> responseObserver = StreamRecorder.create();
 
     // mock の登録
@@ -159,7 +161,8 @@ public class ControllerTests {
         firestore.document("items/" + strUuid).get();
     // firestore 期待値作成
     var item = documentSnapshotApiFuture.get().toObject(Items.class);
-    var expectedData = new Items(strUuid, itemName, Arrays.asList("testid", "testid2"));
+    var expectedData = Items.builder().id(strUuid).name(itemName)
+        .itemIds(Arrays.asList(Items.builder().id(uuidSearch1.toString()).build())).build();
 
     assertEquals(expectedData, item);
   }
@@ -172,8 +175,10 @@ public class ControllerTests {
     var itemName = "itemName";
     var ids = Arrays.asList("testid", "testid2");
     var price = 10000;
-    CreateRequest request =
-        CreateRequest.newBuilder().setName(itemName).addAllItemIds(ids).setPrice(price).build();
+    CreateRequest request = CreateRequest.newBuilder().setName(itemName)
+        .addAllItemIds(
+            Arrays.asList(Bean.newBuilder().setId(uuidSearch1.toString()).setName("name2").build()))
+        .setPrice(price).build();
     StreamRecorder<CreateReply> responseObserver = StreamRecorder.create();
 
     // エラー用のDoc作成
@@ -246,8 +251,10 @@ public class ControllerTests {
    * @throws ExecutionException 例外
    */
   void createDoc(String uuid, String name) throws InterruptedException, ExecutionException {
-
-    var data = new Items(uuid, name, Arrays.asList(uuidSearch1.toString(), uuidSearch2.toString()));
+    var data = Items.builder().id(uuid).name(name)
+        .itemIds(Arrays.asList(Items.builder().id(uuidSearch1.toString()).build(),
+            Items.builder().id(uuidSearch2.toString()).build()))
+        .build();
     firestore.document("items/" + uuid).set(data).get();
   }
 
@@ -257,7 +264,9 @@ public class ControllerTests {
     var name = "イエローオーブ";
 
     var request = UpdateRequest.newBuilder().setId(uuid.toString()).setName(name)
-        .addAllItemIds(Arrays.asList(uuidSearch1.toString(), uuidSearch3.toString())).build();
+        .addAllItemIds(Arrays.asList(Bean.newBuilder().setId(uuidSearch1.toString()).build(),
+            Bean.newBuilder().setId(uuidSearch2.toString()).build()))
+        .build();
     StreamRecorder<UpdateReply> responseObserver = StreamRecorder.create();
 
     // mock データ作成
@@ -285,7 +294,8 @@ public class ControllerTests {
 
     var item = documentSnapshotApiFuture.get().toObject(Items.class);
     var searchExpected = new Items(uuid.toString(), name,
-        Arrays.asList(uuidSearch1.toString(), uuidSearch3.toString()));
+        Arrays.asList(Items.builder().id(uuidSearch1.toString()).build(),
+            Items.builder().id(uuidSearch2.toString()).build()));
     assertEquals(searchExpected, item);
   }
 
@@ -313,7 +323,9 @@ public class ControllerTests {
 
     List<ItemFindReply> expected =
         Arrays.asList(ItemFindReply.newBuilder().setId(uuid.toString()).setName("虹色のオーブ")
-            .addAllItemIds(Arrays.asList(uuidSearch1.toString(), uuidSearch2.toString())).build());
+            .addAllItemIds(Arrays.asList(Bean.newBuilder().setId(uuidSearch1.toString()).build(),
+                Bean.newBuilder().setId(uuidSearch2.toString()).build()))
+            .build());
 
     assertIterableEquals(expected, results);
 

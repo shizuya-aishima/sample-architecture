@@ -24,7 +24,7 @@ enum Status {
 // 登録用リクエスト
 message CreateRequest {
   string name = 1; // 品目名
-  repeated string item_ids = 2; // 素材の item id List
+  repeated Bean item_ids = 2; // 素材の item id List
   int64 price = 3; // 自分の単価
   // bytes data = 3; // 画像データ
 }
@@ -44,6 +44,7 @@ message SearchRequest {
 message Bean {
   string id = 1; // 品目ID
   string name = 2; // 品目名
+  int64 quantity = 3;
 }
 
 // 検索レスポンス
@@ -57,7 +58,7 @@ message SearchReply {
 message UpdateRequest {
   string id = 1; // 品目ID
   string name = 2; // 品目名
-  repeated string item_ids = 3; // 素材の item id List
+  repeated Bean item_ids = 3; // 素材の item id List
 }
 
 // 更新レスポンス
@@ -74,5 +75,5 @@ message ItemFindReply {
   string id = 1; // 品目ID
   string name = 2; // 品目名
   int64 price = 3; // 自分の単価
-  repeated string item_ids = 4; // 素材の item id List
+  repeated Bean item_ids = 4; // 素材の item id List
 }
