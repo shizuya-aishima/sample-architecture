@@ -6,10 +6,16 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Launch PriceApplication",
+      "request": "launch",
+      "mainClass": "com.example.price.PriceApplication"
+    },
+    {
+      "type": "java",
       "name": "Launch ItemApplication",
       "request": "launch",
       "mainClass": "com.example.item.ItemApplication",
       "projectName": "item"
-    },
+    }
   ]
 }

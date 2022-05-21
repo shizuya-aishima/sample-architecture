@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option java_package = "com.example.grpc.price";
+
+// 品目サービス
+service Price {
+  // 品目登録を行う
+  rpc create (CreateRequest) returns (stream CreateReply) {}
+  // 品目参照を行う
+  rpc search (SearchRequest) returns (SearchReply) {}
+  // 品目更新を行う
+  rpc update (UpdateRequest) returns (UpdateReply) {}
+}
+
+// データ状態
+enum Status {
+  PENDING = 0; // 保留（トランザクション登録前）
+  FINISH = 1; // 登録完了
+}
+
+// 登録リクエスト
+message CreateRequest {
+  string id = 1; // 単価ID
+  int64 price = 2; // 単価
+}
+
+// 登録レスポンス
+message CreateReply {
+  Status status = 1; // データ状態
+}
+
+// 検索リクエスト
+message SearchRequest {
+  string id = 1; // 単価ID
+}
+
+// 検索レスポンス
+message SearchReply {
+  int64 price = 1; // 単価
+}
+// 更新リクエスト
+message UpdateRequest {
+  string id = 1; // 単価ID
+  int64 price = 2; // 単価
+}
+
+// 更新レスポンス
+message UpdateReply {
+  Status status = 1; // データ状態
+}
