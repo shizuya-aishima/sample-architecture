@@ -11,6 +11,8 @@ service Item {
   rpc search (SearchRequest) returns (stream SearchReply) {}
   // 品目更新を行う
   rpc update (UpdateRequest) returns (UpdateReply) {}
+  // 品目更新を行う
+  rpc find (ItemFindRequest) returns (ItemFindReply) {}
 }
 
 // データ状態
@@ -61,4 +63,16 @@ message UpdateRequest {
 // 更新レスポンス
 message UpdateReply {
   Status status = 1; // データ状態
+}
+
+// 一件検索リクエスト
+message ItemFindRequest {
+  string id = 1;
+}
+
+message ItemFindReply {
+  string id = 1; // 品目ID
+  string name = 2; // 品目名
+  int64 price = 3; // 自分の単価
+  repeated string item_ids = 4; // 素材の item id List
 }

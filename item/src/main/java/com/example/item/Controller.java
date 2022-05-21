@@ -6,6 +6,8 @@ import com.example.grpc.item.ItemGrpc.ItemImplBase;
 import com.example.grpc.item.ItemOuterClass.Bean;
 import com.example.grpc.item.ItemOuterClass.CreateReply;
 import com.example.grpc.item.ItemOuterClass.CreateRequest;
+import com.example.grpc.item.ItemOuterClass.ItemFindReply;
+import com.example.grpc.item.ItemOuterClass.ItemFindRequest;
 import com.example.grpc.item.ItemOuterClass.SearchReply;
 import com.example.grpc.item.ItemOuterClass.SearchRequest;
 import com.example.grpc.item.ItemOuterClass.Status;
@@ -32,6 +34,15 @@ public class Controller extends ItemImplBase {
   public void create(CreateRequest request, StreamObserver<CreateReply> responseObserver) {
     try {
       var uuid = UUID.randomUUID().toString();
+
+      var duplication = findDoc(uuid);
+      if (duplication != null) {
+        StatusRuntimeException exception =
+            io.grpc.Status.INTERNAL.withDescription("id duplication").asRuntimeException();
+        responseObserver.onError(exception);
+        return;
+      }
+
       // TODO: 処理
       var data = new Items(uuid, request.getName(), request.getItemIdsList());
 
@@ -58,6 +69,7 @@ public class Controller extends ItemImplBase {
       StatusRuntimeException exception =
           io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
       responseObserver.onError(exception);
+      return;
     }
     responseObserver.onNext(CreateReply.newBuilder().setStatus(Status.FINISH).build());
     responseObserver.onCompleted();
@@ -85,6 +97,7 @@ public class Controller extends ItemImplBase {
       StatusRuntimeException exception =
           io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
       responseObserver.onError(exception);
+      return;
     }
     responseObserver.onCompleted();
   }
@@ -97,7 +110,7 @@ public class Controller extends ItemImplBase {
    */
   private Bean searchId(String id) {
     try {
-      var data = firestore.document("items/" + id).get().get().toObject(Items.class);
+      var data = findDoc(id);
       return Bean.newBuilder().setId(data.getId()).setName(data.getName()).build();
     } catch (InterruptedException | ExecutionException e) {
       // TODO Auto-generated catch block
@@ -124,8 +137,32 @@ public class Controller extends ItemImplBase {
       StatusRuntimeException exception =
           io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
       responseObserver.onError(exception);
+      return;
     }
     responseObserver.onNext(UpdateReply.newBuilder().setStatus(Status.FINISH).build());
     responseObserver.onCompleted();
+  }
+
+  @Override
+  public void find(ItemFindRequest request, StreamObserver<ItemFindReply> responseObserver) {
+    try {
+      var item = findDoc(request.getId());
+      responseObserver.onNext(ItemFindReply.newBuilder().setId(item.getId()).setName(item.getName())
+          .addAllItemIds(item.getItemIds()).build());
+    } catch (InterruptedException | ExecutionException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      log.error("{}", e);
+
+      StatusRuntimeException exception =
+          io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
+      responseObserver.onError(exception);
+      return;
+    }
+    responseObserver.onCompleted();
+  }
+
+  private Items findDoc(String id) throws InterruptedException, ExecutionException {
+    return firestore.document("items/" + id).get().get().toObject(Items.class);
   }
 }

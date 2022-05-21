@@ -4,6 +4,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 import com.example.grpc.item.ItemOuterClass.Bean;
 import com.example.grpc.item.ItemOuterClass.CreateReply;
 import com.example.grpc.item.ItemOuterClass.CreateRequest;
+import com.example.grpc.item.ItemOuterClass.ItemFindReply;
+import com.example.grpc.item.ItemOuterClass.ItemFindRequest;
 import com.example.grpc.item.ItemOuterClass.SearchReply;
 import com.example.grpc.item.ItemOuterClass.SearchRequest;
 import com.example.grpc.item.ItemOuterClass.Status;
@@ -161,6 +164,31 @@ public class ControllerTests {
     assertEquals(expectedData, item);
   }
 
+
+  @Test
+  void createError() throws Exception {
+
+    // 呼び出し作成
+    var itemName = "itemName";
+    var ids = Arrays.asList("testid", "testid2");
+    var price = 10000;
+    CreateRequest request =
+        CreateRequest.newBuilder().setName(itemName).addAllItemIds(ids).setPrice(price).build();
+    StreamRecorder<CreateReply> responseObserver = StreamRecorder.create();
+
+    // エラー用のDoc作成
+    createDoc(uuid.toString(), "虹色のオーブ");
+
+    // 呼び出し
+    controller.create(request, responseObserver);
+    if (!responseObserver.awaitCompletion(5, TimeUnit.SECONDS)) {
+      fail("The call did not terminate in time");
+    }
+
+    // エラー確認
+    assertNotNull(responseObserver.getError());
+  }
+
   @Test
   void search0Test() throws InterruptedException, ExecutionException {
     // リクエスト作成
@@ -261,4 +289,33 @@ public class ControllerTests {
     assertEquals(searchExpected, item);
   }
 
+  @Test
+  void findTest() throws InterruptedException, ExecutionException {
+    // リクエスト作成
+    var request = ItemFindRequest.newBuilder().setId(uuid.toString()).build();
+    StreamRecorder<ItemFindReply> responseObserver = StreamRecorder.create();
+
+    // mock データ作成
+    var name1 = "ブルーオーブ";
+    var name2 = "レッドオーブ";
+    createDoc(uuid.toString(), "虹色のオーブ");
+    createDoc(uuidSearch1.toString(), name1);
+    createDoc(uuidSearch2.toString(), name2);
+
+    // 呼び出し
+    controller.find(request, responseObserver);
+
+    // エラー関係
+    assertNull(responseObserver.getError());
+
+    // 結果確認
+    var results = responseObserver.getValues();
+
+    List<ItemFindReply> expected =
+        Arrays.asList(ItemFindReply.newBuilder().setId(uuid.toString()).setName("虹色のオーブ")
+            .addAllItemIds(Arrays.asList(uuidSearch1.toString(), uuidSearch2.toString())).build());
+
+    assertIterableEquals(expected, results);
+
+  }
 }
