@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 option java_package = "com.example.grpc.item";
+package item;
 
 // 品目サービス
 service Item {
@@ -22,6 +23,7 @@ enum Status {
 message CreateRequest {
   string name = 1; // 品目名
   repeated string item_ids = 2; // 素材の item id List
+  int64 price = 3; // 自分の単価
   // bytes data = 3; // 画像データ
 }
 

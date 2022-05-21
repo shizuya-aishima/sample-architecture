@@ -12,6 +12,7 @@ import com.example.grpc.item.ItemOuterClass.Status;
 import com.example.grpc.item.ItemOuterClass.UpdateReply;
 import com.example.grpc.item.ItemOuterClass.UpdateRequest;
 import com.example.item.Bean.Items;
+import com.example.item.price.PriceService;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
 import org.lognet.springboot.grpc.GRpcService;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Controller extends ItemImplBase {
   Firestore firestore;
+  PriceService priceService;
 
   @Override
   public void create(CreateRequest request, StreamObserver<CreateReply> responseObserver) {
@@ -37,15 +39,17 @@ public class Controller extends ItemImplBase {
       WriteResult writeResult = firestore.document("items/" + uuid).set(data).get();
       log.info("{}", writeResult);
 
-      var reply = CreateReply.newBuilder().setStatus(Status.PENDING).build();
-      responseObserver.onNext(reply);
+      responseObserver.onNext(CreateReply.newBuilder().setStatus(Status.PENDING).build());
 
       // TODO: トランザクションがいるような処理
       // 単価情報があった場合、単価情報を書き込むなど
+      var price = com.example.grpc.price.PriceOuterClass.CreateRequest.newBuilder().setId(uuid)
+          .setPrice(request.getPrice()).build();
+      var replies = priceService.blockingStub().create(price);
 
-      var reply2 = CreateReply.newBuilder().setStatus(Status.FINISH).build();
-      responseObserver.onNext(reply2);
-      responseObserver.onCompleted();
+      while (replies.hasNext()) {
+        log.info("status: {}", replies.next().getStatus());
+      }
     } catch (InterruptedException | ExecutionException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -55,6 +59,8 @@ public class Controller extends ItemImplBase {
           io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
       responseObserver.onError(exception);
     }
+    responseObserver.onNext(CreateReply.newBuilder().setStatus(Status.FINISH).build());
+    responseObserver.onCompleted();
   }
 
   @Override

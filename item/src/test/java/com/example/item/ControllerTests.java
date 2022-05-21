@@ -19,7 +19,9 @@ import com.example.grpc.item.ItemOuterClass.SearchRequest;
 import com.example.grpc.item.ItemOuterClass.Status;
 import com.example.grpc.item.ItemOuterClass.UpdateReply;
 import com.example.grpc.item.ItemOuterClass.UpdateRequest;
+import com.example.grpc.price.PriceGrpc.PriceBlockingStub;
 import com.example.item.Bean.Items;
+import com.example.item.price.PriceService;
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.cloud.firestore.CollectionReference;
@@ -28,6 +30,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import io.grpc.internal.testing.StreamRecorder;
+import io.grpc.testing.GrpcServerRule;
 
 // @SpringBootTest
 // @ExtendWith(SpringExtension.class)
@@ -43,6 +47,11 @@ public class ControllerTests {
   private Controller controller;
 
   private Firestore firestore;
+
+  private PriceBlockingStub priceBlockingStub = Mockito.mock(PriceBlockingStub.class);
+
+  @Rule
+  public GrpcServerRule grpcServerRule = new GrpcServerRule().directExecutor();
 
   private static final UUID uuid = UUID.fromString("5af48f3b-468b-4ae0-a065-7d7ac70b37a8");
   private static final UUID uuidSearch1 = UUID.fromString("5af48f3b-468b-4ae0-a065-7d7ac70b37a9");
@@ -65,7 +74,9 @@ public class ControllerTests {
         .setCredentialsProvider(
             FixedCredentialsProvider.create(new FirestoreOptions.EmulatorCredentials()))
         .build().getService();
-    controller = new Controller(firestore);
+    var priceService = Mockito.mock(PriceService.class);
+    Mockito.when(priceService.blockingStub()).thenReturn(priceBlockingStub);
+    controller = new Controller(firestore, priceService);
   }
 
   @AfterEach
@@ -97,27 +108,53 @@ public class ControllerTests {
     }
   }
 
+  /**
+   * 品目作成処理テスト
+   *
+   * @throws Exception エラー
+   */
   @Test
   void createTest() throws Exception {
+
+    // 呼び出し作成
     var itemName = "itemName";
     var ids = Arrays.asList("testid", "testid2");
-    CreateRequest request = CreateRequest.newBuilder().setName(itemName).addAllItemIds(ids).build();
+    var price = 10000;
+    CreateRequest request =
+        CreateRequest.newBuilder().setName(itemName).addAllItemIds(ids).setPrice(price).build();
     StreamRecorder<CreateReply> responseObserver = StreamRecorder.create();
+
+    // mock の登録
+    var mockRequest = com.example.grpc.price.PriceOuterClass.CreateRequest.newBuilder()
+        .setId(uuid.toString()).setPrice(price).build();
+    var mockReply = Arrays.asList(
+        com.example.grpc.price.PriceOuterClass.CreateReply.newBuilder()
+            .setStatus(com.example.grpc.price.PriceOuterClass.Status.PENDING).build(),
+        com.example.grpc.price.PriceOuterClass.CreateReply.newBuilder()
+            .setStatus(com.example.grpc.price.PriceOuterClass.Status.FINISH).build());
+    Mockito.when(priceBlockingStub.create(mockRequest)).thenReturn(mockReply.iterator());
+
+    // 呼び出し
     controller.create(request, responseObserver);
     if (!responseObserver.awaitCompletion(5, TimeUnit.SECONDS)) {
       fail("The call did not terminate in time");
     }
+
+    // エラー確認
     assertNull(responseObserver.getError());
+
+    // 戻り値確認
     var results = responseObserver.getValues();
     List<CreateReply> expected =
         Arrays.asList(CreateReply.newBuilder().setStatus(Status.PENDING).build(),
             CreateReply.newBuilder().setStatus(Status.FINISH).build());
     assertIterableEquals(expected, results);
 
+    // firestore の値確認
     var strUuid = uuid.toString();
     ApiFuture<DocumentSnapshot> documentSnapshotApiFuture =
         firestore.document("items/" + strUuid).get();
-
+    // firestore 期待値作成
     var item = documentSnapshotApiFuture.get().toObject(Items.class);
     var expectedData = new Items(strUuid, itemName, Arrays.asList("testid", "testid2"));
 

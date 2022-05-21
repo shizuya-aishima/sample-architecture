@@ -3,7 +3,6 @@ syntax = "proto3";
 option java_package = "com.example.grpc.price";
 package price;
 
-
 // 品目サービス
 service Price {
   // 品目登録を行う

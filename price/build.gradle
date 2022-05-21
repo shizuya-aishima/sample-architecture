@@ -45,7 +45,6 @@ dependencies {
     // https://mvnrepository.com/artifact/io.grpc/grpc-testing
     testImplementation 'io.grpc:grpc-testing:1.46.0'
 
-
     // firestore 関係
     implementation 'com.google.cloud:spring-cloud-gcp-starter-firestore:3.2.1'
     implementation 'com.google.cloud:spring-cloud-gcp-starter:3.2.1'
