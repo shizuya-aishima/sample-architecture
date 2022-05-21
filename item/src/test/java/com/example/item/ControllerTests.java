@@ -57,6 +57,22 @@ public class ControllerTests {
     mock.when(UUID::randomUUID).thenReturn(uuid);
   }
 
+  @BeforeEach
+  public void setup() throws IOException {
+    // mock の firestore 作成
+    firestore = FirestoreOptions.getDefaultInstance().toBuilder().setProjectId("test")
+        .setHost("localhost:9000").setCredentials(new FirestoreOptions.EmulatorCredentials())
+        .setCredentialsProvider(
+            FixedCredentialsProvider.create(new FirestoreOptions.EmulatorCredentials()))
+        .build().getService();
+    controller = new Controller(firestore);
+  }
+
+  @AfterEach
+  public void closing() {
+    deleteCollection(firestore.collection("items"), 100);
+  }
+
   /**
    * Delete a collection in batches to avoid out-of-memory errors. Batch size may be tuned based on
    * document size (atmost 1MB) and application requirements.
@@ -79,22 +95,6 @@ public class ControllerTests {
     } catch (Exception e) {
       System.err.println("Error deleting collection : " + e.getMessage());
     }
-  }
-
-  @BeforeEach
-  public void setup() throws IOException {
-    // mock の firestore 作成
-    firestore = FirestoreOptions.getDefaultInstance().toBuilder().setProjectId("test")
-        .setHost("localhost:9000").setCredentials(new FirestoreOptions.EmulatorCredentials())
-        .setCredentialsProvider(
-            FixedCredentialsProvider.create(new FirestoreOptions.EmulatorCredentials()))
-        .build().getService();
-    controller = new Controller(firestore);
-  }
-
-  @AfterEach
-  public void closing() {
-    deleteCollection(firestore.collection("items"), 100);
   }
 
   @Test
