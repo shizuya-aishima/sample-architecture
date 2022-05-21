@@ -3,6 +3,7 @@ package com.example.item;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import com.example.grpc.item.ItemGrpc.ItemImplBase;
+import com.example.grpc.item.ItemOuterClass.Bean;
 import com.example.grpc.item.ItemOuterClass.CreateReply;
 import com.example.grpc.item.ItemOuterClass.CreateRequest;
 import com.example.grpc.item.ItemOuterClass.SearchReply;
@@ -14,6 +15,7 @@ import com.example.item.Bean.Items;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
 import org.lognet.springboot.grpc.GRpcService;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,21 +50,76 @@ public class Controller extends ItemImplBase {
       // TODO Auto-generated catch block
       e.printStackTrace();
       log.error("{}", e);
-      var errorReply = CreateReply.newBuilder().setStatus(Status.FAIL).build();
-      responseObserver.onNext(errorReply);
-      responseObserver.onCompleted();
+
+      StatusRuntimeException exception =
+          io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
+      responseObserver.onError(exception);
     }
   }
 
   @Override
   public void search(SearchRequest request, StreamObserver<SearchReply> responseObserver) {
-    // TODO Auto-generated method stub
-    super.search(request, responseObserver);
+    try {
+      var key = request.getName();
+      var data = firestore.collection("items").orderBy("name").startAt(key).endAt(key + "\uf8ff")
+          .get().get().toObjects(Items.class);
+      log.info("{}", data);
+
+      data.stream()
+          .map((e) -> SearchReply.newBuilder().setId(e.getId()).setName(e.getName())
+              .addAllItemIds(e.getItemIds().stream().map((id) -> searchId(id)).toList()).build())
+          .sorted((a, b) -> a.getName().compareTo(b.getName()))
+          .forEach((e) -> responseObserver.onNext(e));
+      // var data2 = SearchReply.newBuilder().setId()
+    } catch (InterruptedException | ExecutionException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      log.error("{}", e);
+
+      StatusRuntimeException exception =
+          io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
+      responseObserver.onError(exception);
+    }
+    responseObserver.onCompleted();
+  }
+
+  /**
+   * items を コレクション で検索します。
+   *
+   * @param id コレクション
+   * @return 品目データ
+   */
+  private Bean searchId(String id) {
+    try {
+      var data = firestore.document("items/" + id).get().get().toObject(Items.class);
+      return Bean.newBuilder().setId(data.getId()).setName(data.getName()).build();
+    } catch (InterruptedException | ExecutionException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      log.error("{}", e);
+      return Bean.newBuilder().build();
+    }
   }
 
   @Override
   public void update(UpdateRequest request, StreamObserver<UpdateReply> responseObserver) {
-    // TODO Auto-generated method stub
-    super.update(request, responseObserver);
+    var uuid = request.getId();
+    var data = new Items(uuid, request.getName(), request.getItemIdsList());
+
+    // .get() blocks on response
+    try {
+      WriteResult writeResult = firestore.document("items/" + uuid).set(data).get();
+      log.info("{}", writeResult);
+    } catch (InterruptedException | ExecutionException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      log.error("{}", e);
+
+      StatusRuntimeException exception =
+          io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
+      responseObserver.onError(exception);
+    }
+    responseObserver.onNext(UpdateReply.newBuilder().setStatus(Status.FINISH).build());
+    responseObserver.onCompleted();
   }
 }

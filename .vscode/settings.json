@@ -27,5 +27,8 @@
         "env": {
             "SPRING_CLOUD_GCP_FIRESTORE_EMULATOR_ENABLED": "true"
         },
+        "vmargs": [
+            "-Dfile.encoding=UTF-8"
+        ],
     }
 }
