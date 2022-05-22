@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+option java_package = "com.example.grpc.item";
+package item;
+
+// 品目サービス
+service Item {
+  // 品目登録を行う
+  rpc create (CreateRequest) returns (stream CreateReply) {}
+  // 品目参照を行う
+  rpc search (SearchRequest) returns (stream SearchReply) {}
+  // 品目更新を行う
+  rpc update (UpdateRequest) returns (UpdateReply) {}
+  // 品目更新を行う
+  rpc find (ItemFindRequest) returns (ItemFindReply) {}
+}
+
+// データ状態
+enum Status {
+  PENDING = 0; // 保留（トランザクション登録前）
+  FINISH = 1; // 登録完了
+}
+
+// 登録用リクエスト
+message CreateRequest {
+  string name = 1; // 品目名
+  repeated Bean item_ids = 2; // 素材の item id List
+  int64 price = 3; // 自分の単価
+  // bytes data = 3; // 画像データ
+}
+
+// 登録レスポンス
+message CreateReply {
+  Status status = 1; // データ状態
+}
+
+// 検索リクエスト
+message SearchRequest {
+  string id = 1; // 品目ID
+  string name = 2; // 品目名
+}
+
+// 品目データ
+message Bean {
+  string id = 1; // 品目ID
+  string name = 2; // 品目名
+  int64 quantity = 3;
+}
+
+// 検索レスポンス
+message SearchReply {
+  string id = 1; // 品目ID
+  string name = 2; // 品目名
+  repeated Bean item_ids = 3; // 素材の item id List
+}
+
+// 更新リクエスト
+message UpdateRequest {
+  string id = 1; // 品目ID
+  string name = 2; // 品目名
+  repeated Bean item_ids = 3; // 素材の item id List
+}
+
+// 更新レスポンス
+message UpdateReply {
+  Status status = 1; // データ状態
+}
+
+// 一件検索リクエスト
+message ItemFindRequest {
+  string id = 1;
+}
+
+message ItemFindReply {
+  string id = 1; // 品目ID
+  string name = 2; // 品目名
+  int64 price = 3; // 自分の単価
+  repeated Bean item_ids = 4; // 素材の item id List
+}
