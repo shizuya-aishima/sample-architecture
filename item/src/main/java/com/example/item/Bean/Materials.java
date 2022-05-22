@@ -1,6 +1,5 @@
 package com.example.item.Bean;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Items {
+public class Materials {
   private String id;
-  private String name;
-  private List<Materials> itemIds;
+  private long quantity;
 }

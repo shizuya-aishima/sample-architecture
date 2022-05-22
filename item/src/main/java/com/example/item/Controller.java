@@ -14,6 +14,7 @@ import com.example.grpc.item.ItemOuterClass.Status;
 import com.example.grpc.item.ItemOuterClass.UpdateReply;
 import com.example.grpc.item.ItemOuterClass.UpdateRequest;
 import com.example.item.Bean.Items;
+import com.example.item.Bean.Materials;
 import com.example.item.price.PriceService;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
@@ -35,7 +36,7 @@ public class Controller extends ItemImplBase {
     try {
       var uuid = UUID.randomUUID().toString();
 
-      var duplication = findDoc(uuid);
+      var duplication = findItemDoc(uuid);
       if (duplication != null) {
         StatusRuntimeException exception =
             io.grpc.Status.INTERNAL.withDescription("id duplication").asRuntimeException();
@@ -44,8 +45,10 @@ public class Controller extends ItemImplBase {
       }
 
       // TODO: 処理
-      var data = new Items(uuid, request.getName(), request.getItemIdsList().stream()
-          .map((e) -> Items.builder().id(e.getId()).build()).toList());
+      var data = new Items(uuid, request.getName(),
+          request.getItemIdsList().stream()
+              .map((e) -> Materials.builder().id(e.getId()).quantity(e.getQuantity()).build())
+              .toList());
 
       // .get() blocks on response
       WriteResult writeResult = firestore.document("items/" + uuid).set(data).get();
@@ -86,7 +89,8 @@ public class Controller extends ItemImplBase {
 
       data.stream()
           .map((e) -> SearchReply.newBuilder().setId(e.getId()).setName(e.getName())
-              .addAllItemIds(e.getItemIds().stream().map((id) -> searchId(id.getId())).toList())
+              .addAllItemIds(e.getItemIds().stream()
+                  .map((id) -> searchId(id.getId(), id.getQuantity())).toList())
               .build())
           .sorted((a, b) -> a.getName().compareTo(b.getName()))
           .forEach((e) -> responseObserver.onNext(e));
@@ -110,10 +114,11 @@ public class Controller extends ItemImplBase {
    * @param id コレクション
    * @return 品目データ
    */
-  private Bean searchId(String id) {
+  private Bean searchId(String id, long quantity) {
     try {
-      var data = findDoc(id);
-      return Bean.newBuilder().setId(data.getId()).setName(data.getName()).build();
+      var data = findItemDoc(id);
+      return Bean.newBuilder().setId(data.getId()).setName(data.getName()).setQuantity(quantity)
+          .build();
     } catch (InterruptedException | ExecutionException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -126,7 +131,7 @@ public class Controller extends ItemImplBase {
   public void update(UpdateRequest request, StreamObserver<UpdateReply> responseObserver) {
     var uuid = request.getId();
     var data = new Items(uuid, request.getName(), request.getItemIdsList().stream()
-        .map((e) -> Items.builder().id(e.getId()).build()).toList());
+        .map((e) -> Materials.builder().id(e.getId()).quantity(e.getQuantity()).build()).toList());
 
     // .get() blocks on response
     try {
@@ -149,10 +154,11 @@ public class Controller extends ItemImplBase {
   @Override
   public void find(ItemFindRequest request, StreamObserver<ItemFindReply> responseObserver) {
     try {
-      var item = findDoc(request.getId());
+      var item = findItemDoc(request.getId());
       responseObserver.onNext(ItemFindReply.newBuilder().setId(item.getId()).setName(item.getName())
           .addAllItemIds(item.getItemIds().stream()
-              .map((e) -> Bean.newBuilder().setId(e.getId()).build()).toList())
+              .map((e) -> Bean.newBuilder().setId(e.getId()).setQuantity(e.getQuantity()).build())
+              .toList())
           .build());
     } catch (InterruptedException | ExecutionException e) {
       // TODO Auto-generated catch block
@@ -167,7 +173,19 @@ public class Controller extends ItemImplBase {
     responseObserver.onCompleted();
   }
 
-  private Items findDoc(String id) throws InterruptedException, ExecutionException {
+  /**
+   * Docを取得します。
+   *
+   * @param id ID
+   * @return Items
+   * @throws InterruptedException
+   * @throws ExecutionException
+   */
+  private Items findItemDoc(String id) throws InterruptedException, ExecutionException {
     return firestore.document("items/" + id).get().get().toObject(Items.class);
+  }
+
+  private Materials findMaterialDoc(String id) throws InterruptedException, ExecutionException {
+    return firestore.document("items/" + id).get().get().toObject(Materials.class);
   }
 }
