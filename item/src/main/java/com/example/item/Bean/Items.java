@@ -14,4 +14,5 @@ public class Items {
   private String id;
   private String name;
   private List<Materials> itemIds;
+  private Expected expected;
 }

@@ -26,6 +26,7 @@ message CreateRequest {
   string name = 1; // 品目名
   repeated Bean item_ids = 2; // 素材の item id List
   int64 price = 3; // 自分の単価
+  ExpectedValue expected = 4; // 成功基準
   // bytes data = 3; // 画像データ
 }
 
@@ -52,6 +53,7 @@ message SearchReply {
   string id = 1; // 品目ID
   string name = 2; // 品目名
   repeated Bean item_ids = 3; // 素材の item id List
+  ExpectedValue expected = 4; // 成功基準
 }
 
 // 更新リクエスト
@@ -59,6 +61,7 @@ message UpdateRequest {
   string id = 1; // 品目ID
   string name = 2; // 品目名
   repeated Bean item_ids = 3; // 素材の item id List
+  ExpectedValue expected = 4; // 成功基準
 }
 
 // 更新レスポンス
@@ -76,4 +79,13 @@ message ItemFindReply {
   string name = 2; // 品目名
   int64 price = 3; // 自分の単価
   repeated Bean item_ids = 4; // 素材の item id List
+  ExpectedValue expected = 5; // 成功基準
+}
+
+// 期待値
+message ExpectedValue {
+  int64 greatSuccess = 1; // 大成功個数
+  int64 success = 2; // 成功個数
+  int64 greatSuccessPrice = 3; // 大成功単価
+  int64 successPrice = 4; // 大成功単価
 }
