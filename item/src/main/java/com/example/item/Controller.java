@@ -6,6 +6,7 @@ import com.example.grpc.item.ItemGrpc.ItemImplBase;
 import com.example.grpc.item.ItemOuterClass.Bean;
 import com.example.grpc.item.ItemOuterClass.CreateReply;
 import com.example.grpc.item.ItemOuterClass.CreateRequest;
+import com.example.grpc.item.ItemOuterClass.ExpectedValue;
 import com.example.grpc.item.ItemOuterClass.ItemFindReply;
 import com.example.grpc.item.ItemOuterClass.ItemFindRequest;
 import com.example.grpc.item.ItemOuterClass.SearchReply;
@@ -13,6 +14,7 @@ import com.example.grpc.item.ItemOuterClass.SearchRequest;
 import com.example.grpc.item.ItemOuterClass.Status;
 import com.example.grpc.item.ItemOuterClass.UpdateReply;
 import com.example.grpc.item.ItemOuterClass.UpdateRequest;
+import com.example.item.Bean.Expected;
 import com.example.item.Bean.Items;
 import com.example.item.Bean.Materials;
 import com.example.item.price.PriceService;
@@ -45,10 +47,12 @@ public class Controller extends ItemImplBase {
       }
 
       // TODO: 処理
-      var data = new Items(uuid, request.getName(),
-          request.getItemIdsList().stream()
-              .map((e) -> Materials.builder().id(e.getId()).quantity(e.getQuantity()).build())
-              .toList());
+      var data = new Items(uuid, request.getName(), request.getItemIdsList().stream()
+          .map((e) -> Materials.builder().id(e.getId()).quantity(e.getQuantity()).build()).toList(),
+          Expected.builder().greatSuccess(request.getExpected().getGreatSuccess())
+              .success(request.getExpected().getSuccess())
+              .greatSuccessPrice(request.getExpected().getGreatSuccessPrice())
+              .successPrice(request.getExpected().getSuccessPrice()).build());
 
       // .get() blocks on response
       WriteResult writeResult = firestore.document("items/" + uuid).set(data).get();
@@ -87,12 +91,14 @@ public class Controller extends ItemImplBase {
           .get().get().toObjects(Items.class);
       log.info("{}", data);
 
-      data.stream()
-          .map((e) -> SearchReply.newBuilder().setId(e.getId()).setName(e.getName())
-              .addAllItemIds(e.getItemIds().stream()
-                  .map((id) -> searchId(id.getId(), id.getQuantity())).toList())
-              .build())
-          .sorted((a, b) -> a.getName().compareTo(b.getName()))
+      data.stream().map((e) -> SearchReply.newBuilder().setId(e.getId()).setName(e.getName())
+          .addAllItemIds(
+              e.getItemIds().stream().map((id) -> searchId(id.getId(), id.getQuantity())).toList())
+          .setExpected(ExpectedValue.newBuilder().setGreatSuccess(e.getExpected().getGreatSuccess())
+              .setGreatSuccessPrice(e.getExpected().getGreatSuccessPrice())
+              .setSuccess(e.getExpected().getSuccess())
+              .setSuccessPrice(e.getExpected().getSuccessPrice()))
+          .build()).sorted((a, b) -> a.getName().compareTo(b.getName()))
           .forEach((e) -> responseObserver.onNext(e));
       // var data2 = SearchReply.newBuilder().setId()
     } catch (InterruptedException | ExecutionException e) {
@@ -131,7 +137,11 @@ public class Controller extends ItemImplBase {
   public void update(UpdateRequest request, StreamObserver<UpdateReply> responseObserver) {
     var uuid = request.getId();
     var data = new Items(uuid, request.getName(), request.getItemIdsList().stream()
-        .map((e) -> Materials.builder().id(e.getId()).quantity(e.getQuantity()).build()).toList());
+        .map((e) -> Materials.builder().id(e.getId()).quantity(e.getQuantity()).build()).toList(),
+        Expected.builder().greatSuccess(request.getExpected().getGreatSuccess())
+            .success(request.getExpected().getSuccess())
+            .greatSuccessPrice(request.getExpected().getGreatSuccessPrice())
+            .successPrice(request.getExpected().getSuccessPrice()).build());
 
     // .get() blocks on response
     try {
@@ -159,6 +169,11 @@ public class Controller extends ItemImplBase {
           .addAllItemIds(item.getItemIds().stream()
               .map((e) -> Bean.newBuilder().setId(e.getId()).setQuantity(e.getQuantity()).build())
               .toList())
+          .setExpected(
+              ExpectedValue.newBuilder().setGreatSuccess(item.getExpected().getGreatSuccess())
+                  .setGreatSuccessPrice(item.getExpected().getGreatSuccessPrice())
+                  .setSuccess(item.getExpected().getSuccess())
+                  .setSuccessPrice(item.getExpected().getSuccessPrice()).build())
           .build());
     } catch (InterruptedException | ExecutionException e) {
       // TODO Auto-generated catch block

@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import com.example.grpc.item.ItemOuterClass.Bean;
 import com.example.grpc.item.ItemOuterClass.CreateReply;
 import com.example.grpc.item.ItemOuterClass.CreateRequest;
+import com.example.grpc.item.ItemOuterClass.ExpectedValue;
 import com.example.grpc.item.ItemOuterClass.ItemFindReply;
 import com.example.grpc.item.ItemOuterClass.ItemFindRequest;
 import com.example.grpc.item.ItemOuterClass.SearchReply;
@@ -23,6 +24,7 @@ import com.example.grpc.item.ItemOuterClass.Status;
 import com.example.grpc.item.ItemOuterClass.UpdateReply;
 import com.example.grpc.item.ItemOuterClass.UpdateRequest;
 import com.example.grpc.price.PriceGrpc.PriceBlockingStub;
+import com.example.item.Bean.Expected;
 import com.example.item.Bean.Items;
 import com.example.item.Bean.Materials;
 import com.example.item.price.PriceService;
@@ -122,12 +124,13 @@ public class ControllerTests {
 
     // 呼び出し作成
     var itemName = "itemName";
-    var ids = Arrays.asList("testid", "testid2");
     var price = 10000;
-    CreateRequest request = CreateRequest
-        .newBuilder().setName(itemName).addAllItemIds(Arrays.asList(Bean.newBuilder()
-            .setId(uuidSearch1.toString()).setName("name2").setQuantity(3).build()))
-        .setPrice(price).build();
+
+    CreateRequest request = CreateRequest.newBuilder().setName(itemName)
+        .addAllItemIds(Arrays.asList(Bean.newBuilder().setId(uuidSearch1.toString())
+            .setName("name2").setQuantity(3).build()))
+        .setPrice(price)
+        .setExpected(ExpectedValue.newBuilder().setGreatSuccess(10).setSuccess(2).build()).build();
     StreamRecorder<CreateReply> responseObserver = StreamRecorder.create();
 
     // mock の登録
@@ -161,10 +164,11 @@ public class ControllerTests {
     ApiFuture<DocumentSnapshot> documentSnapshotApiFuture =
         firestore.document("items/" + strUuid).get();
     // firestore 期待値作成
+
     var item = documentSnapshotApiFuture.get().toObject(Items.class);
     var expectedData = Items.builder().id(strUuid).name(itemName)
         .itemIds(Arrays.asList(Materials.builder().id(uuidSearch1.toString()).quantity(3).build()))
-        .build();
+        .expected(Expected.builder().greatSuccess(10).success(2).build()).build();
 
     assertEquals(expectedData, item);
   }
@@ -241,7 +245,7 @@ public class ControllerTests {
         .addAllItemIds(Arrays.asList(
             Bean.newBuilder().setId(uuidSearch1.toString()).setName(name1).setQuantity(3).build(),
             Bean.newBuilder().setId(uuidSearch2.toString()).setName(name2).setQuantity(3).build()))
-        .build());
+        .setExpected(ExpectedValue.newBuilder().setGreatSuccess(10).setSuccess(2).build()).build());
 
     assertIterableEquals(expected, results);
   }
@@ -256,7 +260,7 @@ public class ControllerTests {
     var data = Items.builder().id(uuid).name(name)
         .itemIds(Arrays.asList(Materials.builder().id(uuidSearch1.toString()).quantity(3).build(),
             Materials.builder().id(uuidSearch2.toString()).quantity(3).build()))
-        .build();
+        .expected(Expected.builder().success(2).greatSuccess(10).build()).build();
     firestore.document("items/" + uuid).set(data).get();
   }
 
@@ -270,6 +274,7 @@ public class ControllerTests {
             .addAllItemIds(Arrays.asList(
                 Bean.newBuilder().setId(uuidSearch1.toString()).setQuantity(5).build(),
                 Bean.newBuilder().setId(uuidSearch2.toString()).setQuantity(6).build()))
+            .setExpected(ExpectedValue.newBuilder().setGreatSuccess(10).setSuccess(2).build())
             .build();
     StreamRecorder<UpdateReply> responseObserver = StreamRecorder.create();
 
@@ -299,7 +304,8 @@ public class ControllerTests {
     var item = documentSnapshotApiFuture.get().toObject(Items.class);
     var searchExpected = new Items(uuid.toString(), name,
         Arrays.asList(Materials.builder().id(uuidSearch1.toString()).quantity(5).build(),
-            Materials.builder().id(uuidSearch2.toString()).quantity(6).build()));
+            Materials.builder().id(uuidSearch2.toString()).quantity(6).build()),
+        Expected.builder().greatSuccess(10).success(2).build());
     assertEquals(searchExpected, item);
   }
 
@@ -330,6 +336,7 @@ public class ControllerTests {
             .addAllItemIds(Arrays.asList(
                 Bean.newBuilder().setId(uuidSearch1.toString()).setQuantity(3).build(),
                 Bean.newBuilder().setId(uuidSearch2.toString()).setQuantity(3).build()))
+            .setExpected(ExpectedValue.newBuilder().setGreatSuccess(10).setSuccess(2).build())
             .build());
 
     assertIterableEquals(expected, results);
