@@ -24,7 +24,9 @@
 		"vscjava.vscode-java-pack",
 		"Pivotal.vscode-boot-dev-pack",
 		"GabrielBB.vscode-lombok",
-		"shengchen.vscode-checkstyle"
+		"shengchen.vscode-checkstyle",
+		"ms-azuretools.vscode-docker",
+		"zxh404.vscode-proto3"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
@@ -34,6 +36,7 @@
 	"remoteUser": "vscode",
 	"features": {
 		"git": "latest",
-		"git-lfs": "latest"
+		"git-lfs": "latest",
+		"docker-from-docker": "latest"
 	}
 }
