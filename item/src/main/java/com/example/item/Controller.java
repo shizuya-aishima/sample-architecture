@@ -2,6 +2,7 @@ package com.example.item;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import org.lognet.springboot.grpc.GRpcService;
 import com.example.grpc.item.ItemGrpc.ItemImplBase;
 import com.example.grpc.item.ItemOuterClass.Bean;
 import com.example.grpc.item.ItemOuterClass.CreateReply;
@@ -20,7 +21,6 @@ import com.example.item.Bean.Materials;
 import com.example.item.price.PriceService;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
-import org.lognet.springboot.grpc.GRpcService;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import lombok.AllArgsConstructor;
@@ -38,13 +38,13 @@ public class Controller extends ItemImplBase {
     try {
       var uuid = UUID.randomUUID().toString();
 
-      var duplication = findItemDoc(uuid);
-      if (duplication != null) {
-        StatusRuntimeException exception =
-            io.grpc.Status.INTERNAL.withDescription("id duplication").asRuntimeException();
-        responseObserver.onError(exception);
-        return;
-      }
+      // var duplication = findItemDoc(uuid);
+      // if (duplication != null) {
+      // StatusRuntimeException exception =
+      // io.grpc.Status.INTERNAL.withDescription("id duplication").asRuntimeException();
+      // responseObserver.onError(exception);
+      // return;
+      // }
 
       // TODO: 処理
       var data = new Items(uuid, request.getName(), request.getItemIdsList().stream()
