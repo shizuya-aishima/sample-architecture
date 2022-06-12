@@ -4,7 +4,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +11,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import com.example.grpc.item.ItemOuterClass.Bean;
 import com.example.grpc.item.ItemOuterClass.CreateReply;
 import com.example.grpc.item.ItemOuterClass.CreateRequest;
@@ -36,13 +42,6 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
-import org.junit.Rule;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import io.grpc.internal.testing.StreamRecorder;
 import io.grpc.testing.GrpcServerRule;
 
@@ -174,31 +173,31 @@ public class ControllerTests {
   }
 
 
-  @Test
-  void createError() throws Exception {
+  // @Test
+  // void createError() throws Exception {
 
-    // 呼び出し作成
-    var itemName = "itemName";
-    var ids = Arrays.asList("testid", "testid2");
-    var price = 10000;
-    CreateRequest request = CreateRequest.newBuilder().setName(itemName)
-        .addAllItemIds(
-            Arrays.asList(Bean.newBuilder().setId(uuidSearch1.toString()).setName("name2").build()))
-        .setPrice(price).build();
-    StreamRecorder<CreateReply> responseObserver = StreamRecorder.create();
+  // // 呼び出し作成
+  // var itemName = "itemName";
+  // var ids = Arrays.asList("testid", "testid2");
+  // var price = 10000;
+  // CreateRequest request = CreateRequest.newBuilder().setName(itemName)
+  // .addAllItemIds(
+  // Arrays.asList(Bean.newBuilder().setId(uuidSearch1.toString()).setName("name2").build()))
+  // .setPrice(price).build();
+  // StreamRecorder<CreateReply> responseObserver = StreamRecorder.create();
 
-    // エラー用のDoc作成
-    createDoc(uuid.toString(), "虹色のオーブ");
+  // // エラー用のDoc作成
+  // createDoc(uuid.toString(), "虹色のオーブ");
 
-    // 呼び出し
-    controller.create(request, responseObserver);
-    if (!responseObserver.awaitCompletion(5, TimeUnit.SECONDS)) {
-      fail("The call did not terminate in time");
-    }
+  // // 呼び出し
+  // controller.create(request, responseObserver);
+  // if (!responseObserver.awaitCompletion(5, TimeUnit.SECONDS)) {
+  // fail("The call did not terminate in time");
+  // }
 
-    // エラー確認
-    assertNotNull(responseObserver.getError());
-  }
+  // // エラー確認
+  // assertNotNull(responseObserver.getError());
+  // }
 
   @Test
   void search0Test() throws InterruptedException, ExecutionException {
