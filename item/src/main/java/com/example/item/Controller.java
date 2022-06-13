@@ -129,7 +129,7 @@ public class Controller extends ItemImplBase {
       var data = findItemDoc(id);
       return Bean.newBuilder().setId(data.getId()).setName(data.getName()).setQuantity(quantity)
           .build();
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
       log.error("{}", e);
