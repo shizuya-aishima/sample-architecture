@@ -125,7 +125,7 @@ public class Controller extends ItemImplBase {
    */
   private Bean searchId(String id, long quantity) {
     try {
-      log.debug("id : {}", id);
+      log.info("id : {}", id);
       var data = findItemDoc(id);
       return Bean.newBuilder().setId(data.getId()).setName(data.getName()).setQuantity(quantity)
           .build();
