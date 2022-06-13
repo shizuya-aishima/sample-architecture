@@ -89,7 +89,10 @@ public class Controller extends ItemImplBase {
       var key = request.getName();
       var data = firestore.collection("items").orderBy("name").startAt(key).endAt(key + "\uf8ff")
           .get().get().toObjects(Items.class);
-      log.info("{}", data);
+
+      if (!data.isEmpty()) {
+        log.info("data: {}", data.toString());
+      }
 
       data.stream().map((e) -> SearchReply.newBuilder().setId(e.getId()).setName(e.getName())
           .addAllItemIds(
@@ -122,6 +125,7 @@ public class Controller extends ItemImplBase {
    */
   private Bean searchId(String id, long quantity) {
     try {
+      log.debug("id : {}", id);
       var data = findItemDoc(id);
       return Bean.newBuilder().setId(data.getId()).setName(data.getName()).setQuantity(quantity)
           .build();
