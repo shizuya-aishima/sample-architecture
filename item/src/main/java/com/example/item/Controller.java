@@ -101,8 +101,10 @@ public class Controller extends ItemImplBase {
               .setGreatSuccessPrice(e.getExpected().getGreatSuccessPrice())
               .setSuccess(e.getExpected().getSuccess())
               .setSuccessPrice(e.getExpected().getSuccessPrice()))
-          .build()).sorted((a, b) -> a.getName().compareTo(b.getName()))
-          .forEach((e) -> responseObserver.onNext(e));
+          .build()).sorted((a, b) -> a.getName().compareTo(b.getName())).forEach((e) -> {
+            log.info("return: {}", e.toString());
+            responseObserver.onNext(e);
+          });
       // var data2 = SearchReply.newBuilder().setId()
     } catch (InterruptedException | ExecutionException e) {
       // TODO Auto-generated catch block
