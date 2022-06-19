@@ -54,6 +54,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-inline:4.5.1'
 
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 }
 
 tasks.named('test') {
