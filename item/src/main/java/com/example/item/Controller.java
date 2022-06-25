@@ -38,13 +38,13 @@ public class Controller extends ItemImplBase {
     try {
       var uuid = UUID.randomUUID().toString();
 
-      // var duplication = findItemDoc(uuid);
-      // if (duplication != null) {
-      // StatusRuntimeException exception =
-      // io.grpc.Status.INTERNAL.withDescription("id duplication").asRuntimeException();
-      // responseObserver.onError(exception);
-      // return;
-      // }
+      var duplication = findItemDoc(uuid);
+      if (duplication != null) {
+        StatusRuntimeException exception =
+            io.grpc.Status.INTERNAL.withDescription("id duplication").asRuntimeException();
+        responseObserver.onError(exception);
+        return;
+      }
 
       // TODO: 処理
       var data = new Items(uuid, request.getName(), request.getItemIdsList().stream()

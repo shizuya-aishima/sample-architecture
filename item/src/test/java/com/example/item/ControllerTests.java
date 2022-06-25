@@ -4,6 +4,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -173,31 +174,31 @@ public class ControllerTests {
   }
 
 
-  // @Test
-  // void createError() throws Exception {
+  @Test
+  void createError() throws Exception {
 
-  // // 呼び出し作成
-  // var itemName = "itemName";
-  // var ids = Arrays.asList("testid", "testid2");
-  // var price = 10000;
-  // CreateRequest request = CreateRequest.newBuilder().setName(itemName)
-  // .addAllItemIds(
-  // Arrays.asList(Bean.newBuilder().setId(uuidSearch1.toString()).setName("name2").build()))
-  // .setPrice(price).build();
-  // StreamRecorder<CreateReply> responseObserver = StreamRecorder.create();
+    // 呼び出し作成
+    var itemName = "itemName";
+    var ids = Arrays.asList("testid", "testid2");
+    var price = 10000;
+    CreateRequest request = CreateRequest.newBuilder().setName(itemName)
+        .addAllItemIds(
+            Arrays.asList(Bean.newBuilder().setId(uuidSearch1.toString()).setName("name2").build()))
+        .setPrice(price).build();
+    StreamRecorder<CreateReply> responseObserver = StreamRecorder.create();
 
-  // // エラー用のDoc作成
-  // createDoc(uuid.toString(), "虹色のオーブ");
+    // エラー用のDoc作成
+    createDoc(uuid.toString(), "虹色のオーブ");
 
-  // // 呼び出し
-  // controller.create(request, responseObserver);
-  // if (!responseObserver.awaitCompletion(5, TimeUnit.SECONDS)) {
-  // fail("The call did not terminate in time");
-  // }
+    // 呼び出し
+    controller.create(request, responseObserver);
+    if (!responseObserver.awaitCompletion(5, TimeUnit.SECONDS)) {
+      fail("The call did not terminate in time");
+    }
 
-  // // エラー確認
-  // assertNotNull(responseObserver.getError());
-  // }
+    // エラー確認
+    assertNotNull(responseObserver.getError());
+  }
 
   @Test
   void search0Test() throws InterruptedException, ExecutionException {
