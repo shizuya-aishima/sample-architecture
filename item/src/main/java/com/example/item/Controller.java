@@ -45,6 +45,7 @@ public class Controller extends ItemImplBase {
         StatusRuntimeException exception =
             io.grpc.Status.INTERNAL.withDescription("id duplication").asRuntimeException();
         responseObserver.onError(exception);
+        responseObserver.onCompleted();
         return;
       }
 
@@ -79,6 +80,7 @@ public class Controller extends ItemImplBase {
       StatusRuntimeException exception =
           io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
       responseObserver.onError(exception);
+      responseObserver.onCompleted();
       return;
     }
     responseObserver.onNext(CreateReply.newBuilder().setStatus(Status.FINISH).build());
@@ -114,6 +116,7 @@ public class Controller extends ItemImplBase {
       StatusRuntimeException exception =
           io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
       responseObserver.onError(exception);
+      responseObserver.onCompleted();
       return;
     }
     responseObserver.onCompleted();
@@ -161,6 +164,7 @@ public class Controller extends ItemImplBase {
       StatusRuntimeException exception =
           io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
       responseObserver.onError(exception);
+      responseObserver.onCompleted();
       return;
     }
     responseObserver.onNext(UpdateReply.newBuilder().setStatus(Status.FINISH).build());
@@ -189,6 +193,7 @@ public class Controller extends ItemImplBase {
       StatusRuntimeException exception =
           io.grpc.Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
       responseObserver.onError(exception);
+      responseObserver.onCompleted();
       return;
     }
     responseObserver.onCompleted();
