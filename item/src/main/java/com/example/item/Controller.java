@@ -39,7 +39,9 @@ public class Controller extends ItemImplBase {
       var uuid = UUID.randomUUID().toString();
 
       var duplication = findItemDoc(uuid);
-      if (duplication != null) {
+      var unique = firestore.collection("items").whereEqualTo("name", request.getName()).get().get()
+          .toObjects(Items.class);
+      if (duplication != null || !unique.isEmpty()) {
         StatusRuntimeException exception =
             io.grpc.Status.INTERNAL.withDescription("id duplication").asRuntimeException();
         responseObserver.onError(exception);
@@ -101,10 +103,8 @@ public class Controller extends ItemImplBase {
               .setGreatSuccessPrice(e.getExpected().getGreatSuccessPrice())
               .setSuccess(e.getExpected().getSuccess())
               .setSuccessPrice(e.getExpected().getSuccessPrice()))
-          .build()).sorted((a, b) -> a.getName().compareTo(b.getName())).forEach((e) -> {
-            log.info("return: {}", e.toString());
-            responseObserver.onNext(e);
-          });
+          .build()).sorted((a, b) -> a.getName().compareTo(b.getName()))
+          .forEach((e) -> responseObserver.onNext(e));
       // var data2 = SearchReply.newBuilder().setId()
     } catch (InterruptedException | ExecutionException e) {
       // TODO Auto-generated catch block
