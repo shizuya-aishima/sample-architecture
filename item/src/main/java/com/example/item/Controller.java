@@ -132,8 +132,11 @@ public class Controller extends ItemImplBase {
     try {
       log.info("id : {}", id);
       var data = findItemDoc(id);
+      var priceData =
+          priceService.blockingStub().search(com.example.grpc.price.PriceOuterClass.SearchRequest
+              .newBuilder().setId(data.getId()).build());
       return Bean.newBuilder().setId(data.getId()).setName(data.getName()).setQuantity(quantity)
-          .build();
+          .setPrice(priceData.getPrice()).build();
     } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -176,9 +179,8 @@ public class Controller extends ItemImplBase {
     try {
       var item = findItemDoc(request.getId());
       responseObserver.onNext(ItemFindReply.newBuilder().setId(item.getId()).setName(item.getName())
-          .addAllItemIds(item.getItemIds().stream()
-              .map((e) -> Bean.newBuilder().setId(e.getId()).setQuantity(e.getQuantity()).build())
-              .toList())
+          .addAllItemIds(
+              item.getItemIds().stream().map((e) -> searchId(e.getId(), e.getQuantity())).toList())
           .setExpected(
               ExpectedValue.newBuilder().setGreatSuccess(item.getExpected().getGreatSuccess())
                   .setGreatSuccessPrice(item.getExpected().getGreatSuccessPrice())

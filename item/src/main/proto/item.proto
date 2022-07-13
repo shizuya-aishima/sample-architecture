@@ -45,7 +45,8 @@ message SearchRequest {
 message Bean {
   string id = 1; // 品目ID
   string name = 2; // 品目名
-  int64 quantity = 3;
+  int64 quantity = 3; // 個数
+  int64 price = 4; // 自分の単価
 }
 
 // 検索レスポンス
