@@ -371,6 +371,12 @@ public class ControllerTests {
     createDoc(uuidSearch2.toString(), name2);
 
     // price を mock 化
+    var priceRequest0 = com.example.grpc.price.PriceOuterClass.SearchRequest.newBuilder()
+        .setId(uuid.toString()).build();
+    Mockito.when(priceBlockingStub.search(priceRequest0)).thenReturn(
+        com.example.grpc.price.PriceOuterClass.SearchReply.newBuilder().setPrice(3000).build());
+
+    // price を mock 化
     var priceRequest1 = com.example.grpc.price.PriceOuterClass.SearchRequest.newBuilder()
         .setId(uuidSearch1.toString()).build();
     Mockito.when(priceBlockingStub.search(priceRequest1)).thenReturn(
@@ -389,14 +395,15 @@ public class ControllerTests {
     // 結果確認
     var results = responseObserver.getValues();
 
-    List<ItemFindReply> expected = Arrays.asList(ItemFindReply.newBuilder().setId(uuid.toString())
-        .setName("虹色のオーブ")
-        .addAllItemIds(Arrays.asList(
-            Bean.newBuilder().setId(uuidSearch1.toString()).setQuantity(3).setName(name1)
-                .setPrice(1000).build(),
-            Bean.newBuilder().setId(uuidSearch2.toString()).setQuantity(3).setName(name2)
-                .setPrice(2000).build()))
-        .setExpected(ExpectedValue.newBuilder().setGreatSuccess(10).setSuccess(2).build()).build());
+    List<ItemFindReply> expected = Arrays
+        .asList(ItemFindReply.newBuilder().setId(uuid.toString()).setName("虹色のオーブ").setPrice(3000)
+            .addAllItemIds(Arrays.asList(
+                Bean.newBuilder().setId(uuidSearch1.toString()).setQuantity(3).setName(name1)
+                    .setPrice(1000).build(),
+                Bean.newBuilder().setId(uuidSearch2.toString()).setQuantity(3).setName(name2)
+                    .setPrice(2000).build()))
+            .setExpected(ExpectedValue.newBuilder().setGreatSuccess(10).setSuccess(2).build())
+            .build());
 
     assertIterableEquals(expected, results);
 

@@ -183,7 +183,11 @@ public class Controller extends ItemImplBase {
   public void find(ItemFindRequest request, StreamObserver<ItemFindReply> responseObserver) {
     try {
       var item = findItemDoc(request.getId());
+      var price =
+          priceService.blockingStub().search(com.example.grpc.price.PriceOuterClass.SearchRequest
+              .newBuilder().setId(request.getId()).build());
       responseObserver.onNext(ItemFindReply.newBuilder().setId(item.getId()).setName(item.getName())
+          .setPrice(price.getPrice())
           .addAllItemIds(
               item.getItemIds().stream().map((e) -> searchId(e.getId(), e.getQuantity())).toList())
           .setExpected(
