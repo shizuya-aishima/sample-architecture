@@ -157,6 +157,7 @@ public class Controller extends ItemImplBase {
 
     // .get() blocks on response
     try {
+      log.info("Items: {}", data);
       WriteResult writeResult = firestore.document("items/" + uuid).set(data).get();
       log.info("{}", writeResult);
       var priceData =
