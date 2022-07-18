@@ -5,6 +5,8 @@ import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -308,7 +310,7 @@ public class ControllerTests {
     var name = "イエローオーブ";
 
     var request =
-        UpdateRequest.newBuilder().setId(uuid.toString()).setName(name)
+        UpdateRequest.newBuilder().setId(uuid.toString()).setName(name).setPrice(1000)
             .addAllItemIds(Arrays.asList(
                 Bean.newBuilder().setId(uuidSearch1.toString()).setQuantity(5).build(),
                 Bean.newBuilder().setId(uuidSearch2.toString()).setQuantity(6).build()))
@@ -322,6 +324,13 @@ public class ControllerTests {
     createDoc(uuid.toString(), "虹色のオーブ");
     createDoc(uuidSearch1.toString(), name1);
     createDoc(uuidSearch2.toString(), name2);
+
+    // mock の登録
+    var mockRequest = com.example.grpc.price.PriceOuterClass.UpdateRequest.newBuilder()
+        .setId(uuid.toString()).setPrice(1000).build();
+    var mockReply = com.example.grpc.price.PriceOuterClass.UpdateReply.newBuilder()
+        .setStatus(com.example.grpc.price.PriceOuterClass.Status.FINISH).build();
+    Mockito.when(priceBlockingStub.update(mockRequest)).thenReturn(mockReply);
 
     // 呼び出し
     controller.update(request, responseObserver);
@@ -345,6 +354,7 @@ public class ControllerTests {
             Materials.builder().id(uuidSearch2.toString()).quantity(6).build()),
         Expected.builder().greatSuccess(10).success(2).build());
     assertEquals(searchExpected, item);
+    verify(priceBlockingStub, times(1)).update(mockRequest);
   }
 
   @Test

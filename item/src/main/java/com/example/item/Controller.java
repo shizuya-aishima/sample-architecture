@@ -159,6 +159,10 @@ public class Controller extends ItemImplBase {
     try {
       WriteResult writeResult = firestore.document("items/" + uuid).set(data).get();
       log.info("{}", writeResult);
+      var priceData =
+          priceService.blockingStub().update(com.example.grpc.price.PriceOuterClass.UpdateRequest
+              .newBuilder().setId(uuid).setPrice(request.getPrice()).build());
+      log.info("{}", priceData.getStatus());
     } catch (InterruptedException | ExecutionException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
